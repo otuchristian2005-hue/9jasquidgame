@@ -3,14 +3,33 @@ import * as THREE from
 
 import { createWorld } from "./world.js";
 
+import {
+    createPlayer,
+    animatePlayer
+} from "./player.js";
+
+
+/* =========================
+   GAME
+========================= */
 
 const game = {};
 
-game.scene = new THREE.Scene();
+
+/* =========================
+   SCENE
+========================= */
+
+game.scene =
+    new THREE.Scene();
 
 game.scene.background =
     new THREE.Color(0x87ceeb);
 
+
+/* =========================
+   CAMERA
+========================= */
 
 game.camera =
     new THREE.PerspectiveCamera(
@@ -22,6 +41,10 @@ game.camera =
     );
 
 
+/* =========================
+   RENDERER
+========================= */
+
 game.renderer =
     new THREE.WebGLRenderer({
         antialias: true,
@@ -30,22 +53,30 @@ game.renderer =
 
 
 game.renderer.setPixelRatio(
-    Math.min(window.devicePixelRatio, 2)
+    Math.min(
+        window.devicePixelRatio,
+        2
+    )
 );
+
 
 game.renderer.setSize(
     window.innerWidth,
     window.innerHeight
 );
 
+
 game.renderer.shadowMap.enabled = true;
+
 
 document.body.appendChild(
     game.renderer.domElement
 );
 
 
-/* LIGHTING */
+/* =========================
+   LIGHTING
+========================= */
 
 const ambientLight =
     new THREE.AmbientLight(
@@ -53,7 +84,9 @@ const ambientLight =
         1.5
     );
 
-game.scene.add(ambientLight);
+game.scene.add(
+    ambientLight
+);
 
 
 const sunlight =
@@ -62,24 +95,46 @@ const sunlight =
         2
     );
 
+
 sunlight.position.set(
     40,
     60,
     30
 );
 
+
 sunlight.castShadow = true;
 
-game.scene.add(sunlight);
+
+game.scene.add(
+    sunlight
+);
 
 
-/* WORLD */
+/* =========================
+   WORLD
+========================= */
 
 game.world =
-    createWorld(game.scene);
+    createWorld(
+        game.scene
+    );
 
 
-/* CAMERA */
+/* =========================
+   PLAYER
+========================= */
+
+game.player =
+    createPlayer(
+        game.scene,
+        game.world.spawnPoint
+    );
+
+
+/* =========================
+   CAMERA POSITION
+========================= */
 
 game.camera.position.set(
     0,
@@ -87,12 +142,17 @@ game.camera.position.set(
     18
 );
 
+
 game.camera.lookAt(
-    game.world.spawnPoint
+    game.player.position.x,
+    game.player.position.y + 1.3,
+    game.player.position.z
 );
 
 
-/* RESIZE */
+/* =========================
+   RESIZE
+========================= */
 
 window.addEventListener(
     "resize",
@@ -102,7 +162,9 @@ window.addEventListener(
             window.innerWidth /
             window.innerHeight;
 
+
         game.camera.updateProjectionMatrix();
+
 
         game.renderer.setSize(
             window.innerWidth,
@@ -113,46 +175,66 @@ window.addEventListener(
 );
 
 
-/* LOADING */
+/* =========================
+   LOADING SCREEN
+========================= */
 
 const loadingProgress =
     document.getElementById(
         "loading-progress"
     );
 
+
 if (loadingProgress) {
 
     loadingProgress.style.width =
         "100%";
+
 }
 
 
-setTimeout(() => {
+setTimeout(
+    () => {
 
-    const loadingScreen =
-        document.getElementById(
-            "loading-screen"
-        );
-
-    if (loadingScreen) {
-
-        loadingScreen.style.opacity =
-            "0";
-
-        loadingScreen.style.transition =
-            "opacity 0.5s ease";
-
-        setTimeout(() => {
-
-            loadingScreen.remove();
-
-        }, 500);
-    }
-
-}, 700);
+        const loadingScreen =
+            document.getElementById(
+                "loading-screen"
+            );
 
 
-/* GAME LOOP */
+        if (loadingScreen) {
+
+            loadingScreen.style.opacity =
+                "0";
+
+
+            loadingScreen.style.transition =
+                "opacity 0.5s ease";
+
+
+            setTimeout(
+                () => {
+
+                    loadingScreen.remove();
+
+                },
+                500
+            );
+
+        }
+
+    },
+    700
+);
+
+
+/* =========================
+   GAME LOOP
+========================= */
+
+const clock =
+    new THREE.Clock();
+
 
 function gameLoop() {
 
@@ -160,13 +242,36 @@ function gameLoop() {
         gameLoop
     );
 
+
+    const delta =
+        clock.getDelta();
+
+
+    /* PLAYER ANIMATION */
+
+    animatePlayer(
+        game.player,
+        false,
+        delta
+    );
+
+
+    /* RENDER */
+
     game.renderer.render(
         game.scene,
         game.camera
     );
+
 }
+
 
 gameLoop();
 
 
-window.game = game;
+/* =========================
+   GLOBAL GAME
+========================= */
+
+window.game =
+    game;
