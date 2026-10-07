@@ -1,27 +1,16 @@
 import * as THREE from
     "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
 
+import { createWorld } from "./world.js";
 
-/* =========================================================
-   GAME CORE
-========================================================= */
 
 const game = {};
-
-
-/* =========================================================
-   SCENE
-========================================================= */
 
 game.scene = new THREE.Scene();
 
 game.scene.background =
     new THREE.Color(0x87ceeb);
 
-
-/* =========================================================
-   CAMERA
-========================================================= */
 
 game.camera =
     new THREE.PerspectiveCamera(
@@ -32,16 +21,6 @@ game.camera =
         1000
     );
 
-game.camera.position.set(
-    0,
-    6,
-    10
-);
-
-
-/* =========================================================
-   RENDERER
-========================================================= */
 
 game.renderer =
     new THREE.WebGLRenderer({
@@ -51,30 +30,22 @@ game.renderer =
 
 
 game.renderer.setPixelRatio(
-    Math.min(
-        window.devicePixelRatio,
-        2
-    )
+    Math.min(window.devicePixelRatio, 2)
 );
-
 
 game.renderer.setSize(
     window.innerWidth,
     window.innerHeight
 );
 
-
 game.renderer.shadowMap.enabled = true;
-
 
 document.body.appendChild(
     game.renderer.domElement
 );
 
 
-/* =========================================================
-   LIGHTING
-========================================================= */
+/* LIGHTING */
 
 const ambientLight =
     new THREE.AmbientLight(
@@ -82,9 +53,7 @@ const ambientLight =
         1.5
     );
 
-game.scene.add(
-    ambientLight
-);
+game.scene.add(ambientLight);
 
 
 const sunlight =
@@ -93,111 +62,63 @@ const sunlight =
         2
     );
 
-
 sunlight.position.set(
     40,
     60,
     30
 );
 
-
 sunlight.castShadow = true;
 
-
-sunlight.shadow.mapSize.width = 1024;
-sunlight.shadow.mapSize.height = 1024;
+game.scene.add(sunlight);
 
 
-game.scene.add(
-    sunlight
-);
+/* WORLD */
+
+game.world =
+    createWorld(game.scene);
 
 
-/* =========================================================
-   TEMPORARY TEST GROUND
-========================================================= */
+/* CAMERA */
 
-const groundGeometry =
-    new THREE.PlaneGeometry(
-        200,
-        200
-    );
-
-
-const groundMaterial =
-    new THREE.MeshStandardMaterial({
-        color: 0x65a83d
-    });
-
-
-const ground =
-    new THREE.Mesh(
-        groundGeometry,
-        groundMaterial
-    );
-
-
-ground.rotation.x =
-    -Math.PI / 2;
-
-
-ground.receiveShadow = true;
-
-
-game.scene.add(
-    ground
-);
-
-
-/* =========================================================
-   TEMPORARY TEST PLAYER
-========================================================= */
-
-const playerGeometry =
-    new THREE.BoxGeometry(
-        1.5,
-        2,
-        1
-    );
-
-
-const playerMaterial =
-    new THREE.MeshStandardMaterial({
-        color: 0x7627d9
-    });
-
-
-game.player =
-    new THREE.Mesh(
-        playerGeometry,
-        playerMaterial
-    );
-
-
-game.player.position.set(
+game.camera.position.set(
     0,
-    1,
-    0
+    6,
+    18
+);
+
+game.camera.lookAt(
+    game.world.spawnPoint
 );
 
 
-game.player.castShadow = true;
+/* RESIZE */
 
+window.addEventListener(
+    "resize",
+    () => {
 
-game.scene.add(
-    game.player
+        game.camera.aspect =
+            window.innerWidth /
+            window.innerHeight;
+
+        game.camera.updateProjectionMatrix();
+
+        game.renderer.setSize(
+            window.innerWidth,
+            window.innerHeight
+        );
+
+    }
 );
 
 
-/* =========================================================
-   LOADING SCREEN
-========================================================= */
+/* LOADING */
 
 const loadingProgress =
     document.getElementById(
         "loading-progress"
     );
-
 
 if (loadingProgress) {
 
@@ -231,34 +152,7 @@ setTimeout(() => {
 }, 700);
 
 
-/* =========================================================
-   RESIZE
-========================================================= */
-
-window.addEventListener(
-    "resize",
-    () => {
-
-        game.camera.aspect =
-            window.innerWidth /
-            window.innerHeight;
-
-
-        game.camera.updateProjectionMatrix();
-
-
-        game.renderer.setSize(
-            window.innerWidth,
-            window.innerHeight
-        );
-
-    }
-);
-
-
-/* =========================================================
-   GAME LOOP
-========================================================= */
+/* GAME LOOP */
 
 function gameLoop() {
 
@@ -266,20 +160,13 @@ function gameLoop() {
         gameLoop
     );
 
-
     game.renderer.render(
         game.scene,
         game.camera
     );
-
 }
-
 
 gameLoop();
 
-
-/* =========================================================
-   GLOBAL GAME OBJECT
-========================================================= */
 
 window.game = game;
