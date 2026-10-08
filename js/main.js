@@ -51,7 +51,6 @@ game.renderer =
         powerPreference: "high-performance"
     });
 
-
 game.renderer.setPixelRatio(
     Math.min(
         window.devicePixelRatio,
@@ -59,15 +58,12 @@ game.renderer.setPixelRatio(
     )
 );
 
-
 game.renderer.setSize(
     window.innerWidth,
     window.innerHeight
 );
 
-
 game.renderer.shadowMap.enabled = true;
-
 
 document.body.appendChild(
     game.renderer.domElement
@@ -95,16 +91,13 @@ const sunlight =
         2
     );
 
-
 sunlight.position.set(
     40,
     60,
     30
 );
 
-
 sunlight.castShadow = true;
-
 
 game.scene.add(
     sunlight
@@ -122,31 +115,114 @@ game.world =
 
 
 /* =========================
-   PLAYER
+   LOADING SCREEN
 ========================= */
 
-game.player =
-    createPlayer(
-        game.scene,
-        game.world.spawnPoint
+const loadingProgress =
+    document.getElementById(
+        "loading-progress"
     );
 
 
+if (loadingProgress) {
+
+    loadingProgress.style.width =
+        "50%";
+
+}
+
+
 /* =========================
-   CAMERA POSITION
+   PLAYER
 ========================= */
 
-game.camera.position.set(
-    0,
-    6,
-    18
-);
+createPlayer(
+    game.scene,
+    game.world.spawnPoint
+)
+.then(
+    (player) => {
+
+        game.player =
+            player;
 
 
-game.camera.lookAt(
-    game.player.position.x,
-    game.player.position.y + 1.3,
-    game.player.position.z
+        /* Move loading bar */
+
+        if (loadingProgress) {
+
+            loadingProgress.style.width =
+                "100%";
+
+        }
+
+
+        /* =========================
+           CAMERA
+        ========================= */
+
+        game.camera.position.set(
+            0,
+            5,
+            18
+        );
+
+
+        game.camera.lookAt(
+            game.player.position.x,
+            game.player.position.y + 1.2,
+            game.player.position.z
+        );
+
+
+        /* =========================
+           REMOVE LOADING SCREEN
+        ========================= */
+
+        setTimeout(
+            () => {
+
+                const loadingScreen =
+                    document.getElementById(
+                        "loading-screen"
+                    );
+
+
+                if (loadingScreen) {
+
+                    loadingScreen.style.opacity =
+                        "0";
+
+                    loadingScreen.style.transition =
+                        "opacity 0.5s ease";
+
+
+                    setTimeout(
+                        () => {
+
+                            loadingScreen.remove();
+
+                        },
+                        500
+                    );
+
+                }
+
+            },
+            500
+        );
+
+    }
+)
+.catch(
+    (error) => {
+
+        console.error(
+            "PLAYER ERROR:",
+            error
+        );
+
+    }
 );
 
 
@@ -176,59 +252,6 @@ window.addEventListener(
 
 
 /* =========================
-   LOADING SCREEN
-========================= */
-
-const loadingProgress =
-    document.getElementById(
-        "loading-progress"
-    );
-
-
-if (loadingProgress) {
-
-    loadingProgress.style.width =
-        "100%";
-
-}
-
-
-setTimeout(
-    () => {
-
-        const loadingScreen =
-            document.getElementById(
-                "loading-screen"
-            );
-
-
-        if (loadingScreen) {
-
-            loadingScreen.style.opacity =
-                "0";
-
-
-            loadingScreen.style.transition =
-                "opacity 0.5s ease";
-
-
-            setTimeout(
-                () => {
-
-                    loadingScreen.remove();
-
-                },
-                500
-            );
-
-        }
-
-    },
-    700
-);
-
-
-/* =========================
    GAME LOOP
 ========================= */
 
@@ -247,16 +270,16 @@ function gameLoop() {
         clock.getDelta();
 
 
-    /* PLAYER ANIMATION */
+    if (game.player) {
 
-    animatePlayer(
-        game.player,
-        false,
-        delta
-    );
+        animatePlayer(
+            game.player,
+            false,
+            delta
+        );
 
+    }
 
-    /* RENDER */
 
     game.renderer.render(
         game.scene,
