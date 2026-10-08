@@ -2,750 +2,404 @@ import * as THREE from
     "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
 
 
-export function createPlayer(scene, spawnPoint) {
+/* =========================================================
+   WORLD SYSTEM
+========================================================= */
 
-    const player = new THREE.Group();
+export function createWorld(scene) {
 
-    player.name = "Player";
-
-
-    /* =========================
-       MATERIALS
-    ========================= */
-
-    const skinMaterial =
-        new THREE.MeshStandardMaterial({
-            color: 0x6b3f2a,
-            roughness: 0.8
-        });
+    const world = {};
 
 
-    const hoodieMaterial =
-        new THREE.MeshStandardMaterial({
-            color: 0x17151d,
-            roughness: 0.75
-        });
+    /* =====================================================
+       GROUND
+    ===================================================== */
 
-
-    const purpleMaterial =
-        new THREE.MeshStandardMaterial({
-            color: 0x7b2cff,
-            roughness: 0.65
-        });
-
-
-    const pantsMaterial =
-        new THREE.MeshStandardMaterial({
-            color: 0x111116,
-            roughness: 0.85
-        });
-
-
-    const whiteMaterial =
-        new THREE.MeshStandardMaterial({
-            color: 0xf2f2f2,
-            roughness: 0.7
-        });
-
-
-    const shoePurpleMaterial =
-        new THREE.MeshStandardMaterial({
-            color: 0x6f2cff,
-            roughness: 0.6
-        });
-
-
-    const hairMaterial =
-        new THREE.MeshStandardMaterial({
-            color: 0x090706,
-            roughness: 1
-        });
-
-
-    const metalMaterial =
-        new THREE.MeshStandardMaterial({
-            color: 0xd7d7d7,
-            metalness: 0.8,
-            roughness: 0.25
-        });
-
-
-    /* =========================
-       BODY
-    ========================= */
-
-    const body =
-        new THREE.Mesh(
-            new THREE.CapsuleGeometry(
-                0.48,
-                0.75,
-                8,
-                16
-            ),
-            hoodieMaterial
+    const groundGeometry =
+        new THREE.PlaneGeometry(
+            300,
+            300
         );
 
-    body.position.y = 1.65;
+    const groundMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x65a83d
+        });
 
-    body.scale.set(
-        0.95,
-        1.05,
-        0.65
-    );
-
-    body.castShadow = true;
-
-    player.add(body);
-
-
-    /* =========================
-       WHITE SHIRT UNDER HOODIE
-    ========================= */
-
-    const shirt =
+    world.ground =
         new THREE.Mesh(
-            new THREE.CylinderGeometry(
-                0.43,
-                0.43,
-                0.18,
-                16
-            ),
-            whiteMaterial
+            groundGeometry,
+            groundMaterial
         );
 
-    shirt.position.y = 1.27;
+    world.ground.rotation.x =
+        -Math.PI / 2;
 
-    player.add(shirt);
+    world.ground.receiveShadow = true;
+
+    scene.add(world.ground);
 
 
-    /* =========================
-       HEAD
-    ========================= */
+    /* =====================================================
+       MAIN ROAD
+    ===================================================== */
 
-    const head =
-        new THREE.Mesh(
-            new THREE.SphereGeometry(
-                0.38,
-                24,
-                24
-            ),
-            skinMaterial
+    const roadGeometry =
+        new THREE.PlaneGeometry(
+            24,
+            300
         );
 
-    head.position.y = 2.55;
+    const roadMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x303030
+        });
 
-    head.scale.set(
-        0.92,
-        1.05,
-        0.9
-    );
+    world.road =
+        new THREE.Mesh(
+            roadGeometry,
+            roadMaterial
+        );
 
-    head.castShadow = true;
+    world.road.rotation.x =
+        -Math.PI / 2;
 
-    player.add(head);
+    world.road.position.y =
+        0.02;
+
+    scene.add(world.road);
 
 
-    /* =========================
-       HAIR
-    ========================= */
+    /* =====================================================
+       ROAD CENTER LINES
+    ===================================================== */
 
-    const hair =
-        new THREE.Group();
-
-    hair.position.set(
-        0,
-        2.82,
-        0
-    );
+    const lineMaterial =
+        new THREE.MeshBasicMaterial({
+            color: 0xffffff
+        });
 
 
     for (
-        let i = 0;
-        i < 16;
-        i++
+        let z = -140;
+        z <= 140;
+        z += 12
     ) {
 
-        const curl =
-            new THREE.Mesh(
-                new THREE.SphereGeometry(
-                    0.13,
-                    8,
-                    8
-                ),
-                hairMaterial
+        const lineGeometry =
+            new THREE.PlaneGeometry(
+                0.5,
+                6
             );
 
-        const angle =
-            (i / 16) *
-            Math.PI * 2;
+        const line =
+            new THREE.Mesh(
+                lineGeometry,
+                lineMaterial
+            );
 
-        const radius =
-            0.28 +
-            Math.random() * 0.08;
+        line.rotation.x =
+            -Math.PI / 2;
 
-        curl.position.set(
-            Math.cos(angle) * radius,
-            Math.random() * 0.14,
-            Math.sin(angle) * radius
+        line.position.set(
+            0,
+            0.04,
+            z
         );
 
-        curl.castShadow = true;
-
-        hair.add(curl);
+        scene.add(line);
     }
 
 
-    const topHair =
-        new THREE.Mesh(
-            new THREE.SphereGeometry(
-                0.31,
-                12,
-                12
-            ),
-            hairMaterial
+    /* =====================================================
+       BUILDING FUNCTION
+    ===================================================== */
+
+    function createBuilding(
+        x,
+        z,
+        width,
+        height,
+        depth,
+        color
+    ) {
+
+        const buildingGeometry =
+            new THREE.BoxGeometry(
+                width,
+                height,
+                depth
+            );
+
+
+        const buildingMaterial =
+            new THREE.MeshStandardMaterial({
+                color: color
+            });
+
+
+        const building =
+            new THREE.Mesh(
+                buildingGeometry,
+                buildingMaterial
+            );
+
+
+        building.position.set(
+            x,
+            height / 2,
+            z
         );
 
-    topHair.position.y = 0.05;
 
-    hair.add(topHair);
+        building.castShadow = true;
 
-    player.add(hair);
+        building.receiveShadow = true;
 
 
-    /* =========================
-       EYES
-    ========================= */
+        scene.add(building);
 
-    const eyeMaterial =
+
+        return building;
+    }
+
+
+    /* =====================================================
+       CITY BUILDINGS
+    ===================================================== */
+
+    createBuilding(
+        -30,
+        -25,
+        14,
+        10,
+        16,
+        0xb86545
+    );
+
+
+    createBuilding(
+        30,
+        -45,
+        16,
+        14,
+        18,
+        0x777777
+    );
+
+
+    createBuilding(
+        -30,
+        25,
+        15,
+        12,
+        18,
+        0xd29a45
+    );
+
+
+    createBuilding(
+        30,
+        35,
+        18,
+        16,
+        20,
+        0x6f78a0
+    );
+
+
+    createBuilding(
+        -30,
+        65,
+        15,
+        9,
+        17,
+        0x985a4b
+    );
+
+
+    createBuilding(
+        30,
+        75,
+        17,
+        13,
+        20,
+        0x858585
+    );
+
+
+    /* =====================================================
+       STREET LIGHTS
+    ===================================================== */
+
+    function createStreetLight(
+        x,
+        z
+    ) {
+
+        const poleGeometry =
+            new THREE.CylinderGeometry(
+                0.08,
+                0.08,
+                5,
+                8
+            );
+
+        const poleMaterial =
+            new THREE.MeshStandardMaterial({
+                color: 0x202020
+            });
+
+        const pole =
+            new THREE.Mesh(
+                poleGeometry,
+                poleMaterial
+            );
+
+        pole.position.set(
+            x,
+            2.5,
+            z
+        );
+
+        pole.castShadow = true;
+
+        scene.add(pole);
+
+
+        const lightGeometry =
+            new THREE.SphereGeometry(
+                0.25,
+                8,
+                8
+            );
+
+        const lightMaterial =
+            new THREE.MeshBasicMaterial({
+                color: 0xffdd88
+            });
+
+        const lamp =
+            new THREE.Mesh(
+                lightGeometry,
+                lightMaterial
+            );
+
+        lamp.position.set(
+            x,
+            5.1,
+            z
+        );
+
+        scene.add(lamp);
+    }
+
+
+    for (
+        let z = -120;
+        z <= 120;
+        z += 25
+    ) {
+
+        createStreetLight(
+            -15,
+            z
+        );
+
+        createStreetLight(
+            15,
+            z
+        );
+    }
+
+
+    /* =====================================================
+       BILLBOARD
+    ===================================================== */
+
+    const billboardPostGeometry =
+        new THREE.BoxGeometry(
+            0.5,
+            7,
+            0.5
+        );
+
+    const billboardPostMaterial =
         new THREE.MeshStandardMaterial({
-            color: 0x111111,
-            roughness: 0.4
+            color: 0x202020
         });
 
 
-    const leftEye =
+    const billboardPost =
         new THREE.Mesh(
-            new THREE.SphereGeometry(
-                0.035,
-                8,
-                8
-            ),
-            eyeMaterial
+            billboardPostGeometry,
+            billboardPostMaterial
         );
 
-    leftEye.position.set(
-        -0.13,
-        2.57,
-        0.35
+    billboardPost.position.set(
+        8,
+        3.5,
+        -15
+    );
+
+    billboardPost.castShadow = true;
+
+    scene.add(
+        billboardPost
     );
 
 
-    const rightEye =
+    const billboardGeometry =
+        new THREE.BoxGeometry(
+            12,
+            5,
+            0.4
+        );
+
+    const billboardMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x171717
+        });
+
+
+    const billboard =
         new THREE.Mesh(
-            new THREE.SphereGeometry(
-                0.035,
-                8,
-                8
-            ),
-            eyeMaterial
+            billboardGeometry,
+            billboardMaterial
         );
 
-    rightEye.position.set(
-        0.13,
-        2.57,
-        0.35
+    billboard.position.set(
+        8,
+        7,
+        -15
     );
 
-    player.add(
-        leftEye,
-        rightEye
+    billboard.castShadow = true;
+
+    scene.add(
+        billboard
     );
 
 
-    /* =========================
-       HOOD
-    ========================= */
-
-    const hood =
-        new THREE.Mesh(
-            new THREE.TorusGeometry(
-                0.39,
-                0.08,
-                8,
-                20,
-                Math.PI
-            ),
-            hoodieMaterial
-        );
-
-    hood.rotation.x =
-        Math.PI / 2;
-
-    hood.position.set(
-        0,
-        2.25,
-        -0.05
-    );
-
-    player.add(hood);
-
-
-    /* =========================
-       ARMS
-    ========================= */
-
-    function createArm(x) {
-
-        const arm =
-            new THREE.Group();
-
-        arm.position.set(
-            x,
-            1.72,
-            0
-        );
-
-
-        const sleeve =
-            new THREE.Mesh(
-                new THREE.CapsuleGeometry(
-                    0.14,
-                    0.55,
-                    6,
-                    12
-                ),
-                hoodieMaterial
-            );
-
-        sleeve.rotation.z =
-            x > 0
-                ? -0.15
-                : 0.15;
-
-        sleeve.castShadow = true;
-
-        arm.add(sleeve);
-
-
-        const hand =
-            new THREE.Mesh(
-                new THREE.SphereGeometry(
-                    0.14,
-                    12,
-                    12
-                ),
-                skinMaterial
-            );
-
-        hand.position.y =
-            -0.42;
-
-        hand.castShadow = true;
-
-        arm.add(hand);
-
-
-        player.add(arm);
-
-        return arm;
-    }
-
-
-    const leftArm =
-        createArm(-0.62);
-
-    const rightArm =
-        createArm(0.62);
-
-
-    /* =========================
-       LEGS
-    ========================= */
-
-    function createLeg(x) {
-
-        const leg =
-            new THREE.Group();
-
-        leg.position.set(
-            x,
-            0.95,
-            0
-        );
-
-
-        const pants =
-            new THREE.Mesh(
-                new THREE.CapsuleGeometry(
-                    0.18,
-                    0.62,
-                    6,
-                    12
-                ),
-                pantsMaterial
-            );
-
-        pants.castShadow = true;
-
-        leg.add(pants);
-
-
-        /* Cargo pocket */
-
-        const pocket =
-            new THREE.Mesh(
-                new THREE.BoxGeometry(
-                    0.18,
-                    0.25,
-                    0.05
-                ),
-                purpleMaterial
-            );
-
-        pocket.position.set(
-            x > 0 ? -0.18 : 0.18,
-            0,
-            0.17
-        );
-
-        leg.add(pocket);
-
-
-        player.add(leg);
-
-        return leg;
-    }
-
-
-    const leftLeg =
-        createLeg(-0.25);
-
-    const rightLeg =
-        createLeg(0.25);
-
-
-    /* =========================
-       SNEAKERS
-    ========================= */
-
-    function createShoe(x) {
-
-        const shoe =
-            new THREE.Mesh(
-                new THREE.BoxGeometry(
-                    0.34,
-                    0.18,
-                    0.58
-                ),
-                shoePurpleMaterial
-            );
-
-        shoe.position.set(
-            x,
-            0.42,
-            0.10
-        );
-
-        shoe.castShadow = true;
-
-        player.add(shoe);
-
-
-        const sole =
-            new THREE.Mesh(
-                new THREE.BoxGeometry(
-                    0.36,
-                    0.07,
-                    0.61
-                ),
-                whiteMaterial
-            );
-
-        sole.position.set(
-            x,
-            0.32,
-            0.10
-        );
-
-        player.add(sole);
-    }
-
-
-    createShoe(-0.25);
-    createShoe(0.25);
-
-
-    /* =========================
-       BACKPACK
-    ========================= */
-
-    const backpack =
-        new THREE.Mesh(
-            new THREE.BoxGeometry(
-                0.62,
-                0.75,
-                0.25
-            ),
-            hoodieMaterial
-        );
-
-    backpack.position.set(
-        0,
-        1.65,
-        -0.48
-    );
-
-    backpack.castShadow = true;
-
-    player.add(backpack);
-
-
-    /* Backpack purple detail */
-
-    const backpackDetail =
-        new THREE.Mesh(
-            new THREE.BoxGeometry(
-                0.22,
-                0.16,
-                0.03
-            ),
-            purpleMaterial
-        );
-
-    backpackDetail.position.set(
-        0,
-        1.65,
-        -0.62
-    );
-
-    player.add(
-        backpackDetail
-    );
-
-
-    /* =========================
-       NECKLACE
-    ========================= */
-
-    const necklace =
-        new THREE.Mesh(
-            new THREE.TorusGeometry(
-                0.16,
-                0.015,
-                6,
-                20
-            ),
-            metalMaterial
-        );
-
-    necklace.rotation.x =
-        Math.PI / 2;
-
-    necklace.position.set(
-        0,
-        2.29,
-        0.18
-    );
-
-    player.add(
-        necklace
-    );
-
-
-    /* =========================
-       PURPLE SLEEVE DETAILS
-    ========================= */
-
-    const leftStripe =
-        new THREE.Mesh(
-            new THREE.BoxGeometry(
-                0.035,
-                0.4,
-                0.03
-            ),
-            purpleMaterial
-        );
-
-    leftStripe.position.set(
-        -0.73,
-        1.72,
-        0.13
-    );
-
-
-    const rightStripe =
-        leftStripe.clone();
-
-    rightStripe.position.x =
-        0.73;
-
-    player.add(
-        leftStripe,
-        rightStripe
-    );
-
-
-    /* =========================
-       PLAYER DATA
-    ========================= */
-
-    player.userData = {
-
-        speed: 0.08,
-
-        jumpStrength: 0.22,
-
-        gravity: 0.012,
-
-        verticalVelocity: 0,
-
-        isJumping: false,
-
-        leftArm,
-
-        rightArm,
-
-        leftLeg,
-
-        rightLeg,
-
-        walkTime: 0
-
-    };
-
-
-    /* =========================
-       SPAWN
-    ========================= */
-
-    if (spawnPoint) {
-
-        player.position.copy(
-            spawnPoint
-        );
-
-    } else {
-
-        player.position.set(
+    /* =====================================================
+       WORLD DATA
+    ===================================================== */
+
+    world.spawnPoint =
+        new THREE.Vector3(
             0,
             0,
             10
         );
 
-    }
+
+    world.cityName =
+        "9ja City";
 
 
-    scene.add(player);
+    world.country =
+        "Nigeria";
 
 
-    return player;
-}
-
-
-/* ==================================
-   PLAYER ANIMATION
-================================== */
-
-export function animatePlayer(
-    player,
-    moving,
-    delta
-) {
-
-    if (!player) return;
-
-
-    const data =
-        player.userData;
-
-
-    if (moving) {
-
-        data.walkTime +=
-            delta * 8;
-
-        const swing =
-            Math.sin(
-                data.walkTime
-            ) * 0.55;
-
-        data.leftArm.rotation.x =
-            swing;
-
-        data.rightArm.rotation.x =
-            -swing;
-
-        data.leftLeg.rotation.x =
-            -swing;
-
-        data.rightLeg.rotation.x =
-            swing;
-
-    } else {
-
-        data.leftArm.rotation.x *=
-            0.85;
-
-        data.rightArm.rotation.x *=
-            0.85;
-
-        data.leftLeg.rotation.x *=
-            0.85;
-
-        data.rightLeg.rotation.x *=
-            0.85;
-
-    }
-
-
-    /* =========================
-       JUMP PHYSICS
-    ========================= */
-
-    if (data.isJumping) {
-
-        data.verticalVelocity -=
-            data.gravity;
-
-        player.position.y +=
-            data.verticalVelocity;
-
-
-        if (
-            player.position.y <= 0
-        ) {
-
-            player.position.y = 0;
-
-            data.verticalVelocity = 0;
-
-            data.isJumping = false;
-
-        }
-
-    }
-
-}
-
-
-export function jumpPlayer(
-    player
-) {
-
-    if (!player) return;
-
-
-    const data =
-        player.userData;
-
-
-    if (!data.isJumping) {
-
-        data.verticalVelocity =
-            data.jumpStrength;
-
-        data.isJumping = true;
-
-    }
-
+    return world;
 }
